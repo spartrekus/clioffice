@@ -30,6 +30,7 @@ int app_colspace = 0;
 int user_show_line = 0;
 int user_show_sum = 0;
 int user_show_popupsum = 0;
+int user_show_filter = 0;
 int cellx_start = 1;
 float cellsum = 0; 
 char statusbar_cellcontent[PATH_MAX];
@@ -735,10 +736,19 @@ int main( int argc, char *argv[])
         mvprintw( rows-3, 2, "" ); 
         if ( user_show_sum == 1 )
            printw( "|2.Sum: %f|", cellsum );
+        if ( user_show_popupsum == 1 )
+           printw( "|3.Sum: %f|", cellsum );
+
+        if ( user_show_filter == 1 )
+         if ( strcmp( linefilter, "" ) != 0 ) 
+           printw( "|F3:%s|", linefilter );
+        if ( user_show_filter == 1 )
+         if ( strcmp( linefiltertime, "" ) != 0 ) 
+           printw( "|F7:%s|", linefiltertime );
+
         // last
         if ( user_show_popupsum == 1 )
         {
-           printw( "|3.Sum: %f|", cellsum );
            gfxhline( rows/2+6 );
            mvprintw( rows/2+6, cols/2-10, "|3.Sum: %f|", cellsum );
         }
@@ -783,6 +793,9 @@ int main( int argc, char *argv[])
               break;
            case '3':
               if (  user_show_popupsum == 0 ) user_show_popupsum = 1; else user_show_popupsum = 0; 
+              break;
+           case '4':
+              if (  user_show_filter == 0 ) user_show_filter = 1; else user_show_filter = 0; 
               break;
 
            case 'F':
