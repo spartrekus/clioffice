@@ -6,12 +6,10 @@
 #include <ncurses.h>
 #include <unistd.h> // usleep
 
-
 #include <dirent.h> //path_max
 #include <sys/stat.h>
 #include <time.h> 
 #include <math.h>
-
 
 
 int rows, cols; 
@@ -684,7 +682,7 @@ int main( int argc, char *argv[])
   init_pair(6,  COLOR_CYAN,    COLOR_BLACK);
   init_pair(7,  COLOR_BLUE,    COLOR_WHITE);
 
-  int foo, fooy , foox ;
+   int foo, fooy , foox, fooxyi;
 
      ////////////////////////////////////////////////////////
      //if ( strcmp( argv[2] , "all" ) ==  0 ) 
@@ -717,6 +715,7 @@ int main( int argc, char *argv[])
         if ( user_celly <= 0 ) user_celly = 0; 
 
         getmaxyx( stdscr, rows, cols);
+        attroff( A_BOLD ); attroff( A_REVERSE ); color_set( 7, NULL );
         void_draw();
 
         attroff( A_REVERSE );
@@ -732,19 +731,30 @@ int main( int argc, char *argv[])
               mvprintw( rows/2, 0, "|%s|", fullcurrentline);
         }
 
+
+        //loc
+        //mvprintw( rows-4, 2, "" ); 
+        mvprintw( 0, 12, "" ); 
+        if ( user_show_filter == 1 )
+        {
+           printw( "|F1:Details|");
+         if ( strcmp( linefilter, "" ) != 0 ) 
+           printw( " |F3:%s|", linefilter );
+         else 
+           printw( " |F3:NoFilter#1|");
+         if ( strcmp( linefiltertime, "" ) != 0 ) 
+           printw( " |F7:%s|", linefiltertime );
+         else 
+           printw( " |F7:NoFilter#2|");
+        }
+        printw( " |?:Help|");
+
         //loc
         mvprintw( rows-3, 2, "" ); 
         if ( user_show_sum == 1 )
            printw( "|2.Sum: %f|", cellsum );
         if ( user_show_popupsum == 1 )
            printw( "|3.Sum: %f|", cellsum );
-
-        if ( user_show_filter == 1 )
-         if ( strcmp( linefilter, "" ) != 0 ) 
-           printw( "|F3:%s|", linefilter );
-        if ( user_show_filter == 1 )
-         if ( strcmp( linefiltertime, "" ) != 0 ) 
-           printw( "|F7:%s|", linefiltertime );
 
         // last
         if ( user_show_popupsum == 1 )
@@ -766,6 +776,7 @@ int main( int argc, char *argv[])
         curs_set( 0 );
         ch = getch();
         curs_set( 1 );
+        attroff( A_BOLD ); attroff( A_REVERSE ); color_set( 7, NULL );
 
         switch( ch ) 
         {
@@ -780,8 +791,49 @@ int main( int argc, char *argv[])
                ncurses_runcmd( " bash ");
               break;
 
-           case 'z':
+           case '?':
+              attroff( A_BOLD ); attroff( A_REVERSE ); color_set( 7, NULL );
+              void_cls(); 
+              attron( A_REVERSE );
+              attroff( A_BOLD );
+              gfxframe( 1, 0 , rows-3, cols-1 );
+              attroff( A_REVERSE );
+              gfxhline( 0 );
+              mvprintw( 0 , 0, "|CLISHEET|");
+              attroff( A_REVERSE );
+              gfxhline( rows-2 );
+              gfxhline( rows-1 );
+              mvprintw( rows-1, 0, "Press Key  (Cancel Help)" );
+              fooxyi = 2; 
+              attron( A_REVERSE );
+              mvprintw( fooxyi++, 3 , ">VIEW " );
+              mvprintw( fooxyi++, 3 , "  - Key < and >: for space" );
+              mvprintw( fooxyi++, 3 , "  - Key [ and ]: for the columns selection" );
+              mvprintw( fooxyi++, 3 , "  - Key ( and ): for the size selection ");
+              mvprintw( fooxyi++, 3 , "  - Key ?: This Help ");
+              mvprintw( fooxyi++, 3 , " " );
+              mvprintw( fooxyi++, 3 , ">FILTER " );
+              mvprintw( fooxyi++, 3 , "  - Key F3: for filter Shopping " );
+              mvprintw( fooxyi++, 3 , "  - Key F7: for filter Time " );
+              mvprintw( fooxyi++, 3 , "  - Key Ctrl+B: for deleting in input ");
+              mvprintw( fooxyi++, 3 , " " );
+              mvprintw( fooxyi++, 3 , ">CALCULATIONS " );
+              mvprintw( fooxyi++, 3 , "  - Key 1: for details" );
+              mvprintw( fooxyi++, 3 , "  - Key 2: for Sum (view)" );
+              mvprintw( fooxyi++, 3 , "  - Key 3: for Sum and popup frame (view)" );
+              mvprintw( fooxyi++, 3 , "  - Key 4: for Help on Filters" );
+              mvprintw( fooxyi++, 3 , " " );
+              mvprintw( fooxyi++, 3 , ">MOVES " );
+              mvprintw( fooxyi++, 3 , "  - Key Up,down,left,right:   for regular moves in cells" );
+              mvprintw( fooxyi++, 3 , "  - Key Home,PageUp,PageDown: for regular scroll up/down,.." );
+              mvprintw( fooxyi++, 3 , " " );
+              mvprintw( fooxyi++, 3 , ">Quit");
+              mvprintw( fooxyi++, 3 , "  - Key F10: Quit " );
+              getch();
+              break;
+
            case '1':
+           case KEY_F(1):
               if (  user_show_line == 0 ) 
                   user_show_line = 1; 
               else
@@ -862,10 +914,24 @@ int main( int argc, char *argv[])
               user_scrollx = 0; 
               break;
            case 'g':
+           case KEY_HOME:
               user_cellx = cellx_start; 
               user_celly = 1; 
               user_scrolly = 0; 
               user_scrollx = 0; 
+              break;
+
+           case KEY_NPAGE:
+              user_scrolly++;
+              user_scrolly++;
+              user_scrolly++;
+              user_scrolly++;
+              break;
+           case KEY_PPAGE:
+              user_scrolly--;
+              user_scrolly--;
+              user_scrolly--;
+              user_scrolly--;
               break;
 
            case 32:
